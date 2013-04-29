@@ -1,5 +1,5 @@
 CXX=g++
-FLGS=-g -std=c++0x -DBN_DEBUG -pthread -ldl -lcrypto -lssl -lgmpxx -lgmp
+FLGS=-g -std=c++0x -DBN_DEBUG -pthread -lcrypto -lssl -lgmpxx -lgmp
 SRCS=$(shell ls *.cpp) $(shell ls net/*.cpp) $(shell ls crypt/*.cpp) $(shell ls prot/*.cpp) $(shell ls mac/*.cpp) $(shell ls test/*.cpp)
 OBJS=$(subst .cpp,.o,$(SRCS))
 
