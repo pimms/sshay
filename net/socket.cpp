@@ -293,6 +293,15 @@ int Socket::LastSize() {
 
 /*
 ==================
+Socket::GetSocketID
+==================
+*/
+int Socket::GetSocketID() {
+	return socketID;
+}
+
+/*
+==================
 Socket::ProcessData
 
 If more than one packet is received at the same 

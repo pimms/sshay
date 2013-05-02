@@ -26,6 +26,7 @@ public:
 	bool 			HasData();
 	ubyte* 			Read();	
 	int 			LastSize();	// The size of the last returned data
+	int 			GetSocketID();
 
 private:
 	int 			socketID;

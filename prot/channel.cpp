@@ -260,7 +260,7 @@ void Channel::OnChanData(const ubyte *data, uint32 len) {
 		if (IsUbytePrintable(ub)) {
 			printf("%c", ub);
 		} else {
-			/* Handle special stuff */
+			
 		}
 	}
 }

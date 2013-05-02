@@ -39,6 +39,9 @@ void* StdinThread(void*) {
 	fd_set fdset;
 	int c=0;
 
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
 	StdinNoncanonical(orgopts);
 
 	while (t_continue) {
@@ -47,6 +50,10 @@ void* StdinThread(void*) {
 			pthread_mutex_lock(&inlock);
 			g_input += c;
 			pthread_mutex_unlock(&inlock);
+		} else {
+			FD_ZERO(&fdset);
+			FD_SET(fileno(stdin), &fdset);
+			select(fileno(stdin)+1, &fdset, NULL, NULL, &tv);
 		}
 	}
 
