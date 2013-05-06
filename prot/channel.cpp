@@ -10,7 +10,7 @@ Channel::Channel(CHDir dir, uint32 chn, string ty, Socket *s) {
 	reqType 	= ty;
 	socket  	= s;
 	direction 	= dir;
-	winSizeIn 	= 0;
+	winSizeIn 	= 15000;
 	winSizeOut 	= 0;
 	maxSize 	= 0;
 
@@ -260,7 +260,7 @@ void Channel::OnChanData(const ubyte *data, uint32 len) {
 		if (IsUbytePrintable(ub)) {
 			printf("%c", ub);
 		} else {
-			
+			HandleUnprintable(ub);
 		}
 	}
 }
@@ -337,8 +337,8 @@ Message Channel::GetOpenRequestMsg() {
 	msg.AddUI(reqType.length());
 	msg.Add(reqType);
 	msg.AddUI(senChan);
-	msg.AddUI(3200); 	// Window IN
-	msg.AddUI(35000);	// Max packet
+	msg.AddUI(winSizeIn); 	// Window IN
+	msg.AddUI(35000);		// Max packet
 
 	return msg;
 }
@@ -405,4 +405,24 @@ bool Channel::IsUbytePrintable(ubyte c) {
 	}	
 
 	return false;
+}
+
+/*
+==================
+Channel::HandleUnprintable
+==================
+*/
+void Channel::HandleUnprintable(ubyte c) {
+	switch (c) {
+		case 8:	EraseChar(); 	break;
+	}
+}
+
+/*
+==================
+Channel::EraseChar
+==================
+*/
+void Channel::EraseChar() {
+	printf("\b \b");
 }

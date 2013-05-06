@@ -80,4 +80,7 @@ protected:
 	Message 	GetShellRequestMsg();
 
 	bool 		IsUbytePrintable(ubyte c);
+	void 		HandleUnprintable(ubyte c);
+
+	void 		EraseChar();
 };

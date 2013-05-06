@@ -206,10 +206,9 @@ bool Socket::HasData() {
 		if (errno != 11) {
 			Error("Failed to peek for data", errno);
 		}
-		return false;
 	}
 
-	return (n != 0) || (!pqueue.empty());
+	return (n > 0) || (!pqueue.empty());
 }
 
 /*

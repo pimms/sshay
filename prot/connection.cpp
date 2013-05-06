@@ -23,7 +23,8 @@ void StdinNoncanonical(struct termios &orgopt) {
 	tcgetattr(STDIN_FILENO, &orgopt);
 	memcpy(&new_opts, &orgopt, sizeof(new_opts));
 
-	new_opts.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOKE | ICRNL);
+	new_opts.c_lflag &= ~(ECHO);
+	new_opts.c_lflag &= ~(ICANON);
 	new_opts.c_cc[VMIN] = 0;
 	new_opts.c_cc[VTIME] = 0;
 	tcsetattr(STDIN_FILENO, TCSANOW, &new_opts);
@@ -35,26 +36,18 @@ void StdinCanonical(struct termios &orgopt) {
 
 void* StdinThread(void*) {
 	struct termios orgopts;
-	struct timeval tv;
-	fd_set fdset;
-	int c=0;
-
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
+	int c=0, res=0;
 
 	StdinNoncanonical(orgopts);
 
 	while (t_continue) {
-		c = fgetc(stdin);
-		if (c > 0) {
+		while ((c = getchar()) > 0) {
 			pthread_mutex_lock(&inlock);
 			g_input += c;
 			pthread_mutex_unlock(&inlock);
-		} else {
-			FD_ZERO(&fdset);
-			FD_SET(fileno(stdin), &fdset);
-			select(fileno(stdin)+1, &fdset, NULL, NULL, &tv);
 		}
+		
+		usleep(10000);
 	}
 
   	StdinCanonical(orgopts);
@@ -118,6 +111,8 @@ int Connection::MainLoop() {
 		}
 			
 		HandleInput();
+
+		usleep(10000);
 	}
 
 	socket->Disconnect();
