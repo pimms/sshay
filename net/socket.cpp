@@ -189,26 +189,7 @@ bool Socket::HasData() {
 		return false;
 	}
 
-	//printf("peek");
-
-	ubyte buf[8];
-	int flag = fcntl(socketID, F_GETFL);
-
-	/* Set the socket in non-blocking mode */
-	fcntl(socketID, F_SETFL, flag | O_NONBLOCK);
-
-	int n = recv(socketID, buf, 8, MSG_PEEK);
-
-	/* Revert to blocking */
-	fcntl(socketID, F_SETFL, flag & ~(O_NONBLOCK));
-
-	if (n < 0) {
-		if (errno != 11) {
-			Error("Failed to peek for data", errno);
-		}
-	}
-
-	return (n > 0) || (!pqueue.empty());
+	return (NextSize() > 0) || (!pqueue.empty());
 }
 
 /*
@@ -234,45 +215,37 @@ ubyte* Socket::Read() {
 		return NULL;
 	}
 
-	ubyte *data = new ubyte[1700];
-	int n = recv(socketID, data, 1699, 0);
+	vector<ubyte> buffer;
+	ubyte tmp[256];
+	ubyte *data;
+	int n = 0;
+
+	do {
+		n = recv(socketID, tmp, 256, 0);
+		
+		for (int i=0; i<n; i++) {
+			buffer.push_back(tmp[i]);
+		}
+	} while (n == 256);
 
 	if (n < 0) {
 		Warning("Failed to read from socket", errno);
-		delete[] data;
 		lastSize = 0;
 		return NULL;
-	} else if (n == 0) {
+	} else if (!buffer.size()) {
 		Warning("The connection closed unexpectedly", errno);
-		delete[] data;
 		lastSize = 0;
 		return NULL;
-	} else if (n >= 1699) {
-		Warning("LARGE PACKET", n);
+	} 
+
+	data = new ubyte[buffer.size()];
+	for (int i=0; i<buffer.size(); i++) {
+		data[i] = buffer[i];
 	}
 
-	/*
-	if (Session::DoCipherPackets()) {
-		uint32 ciphLen = n;
-		if (Session::DoHashPackets()) {
-			ciphLen -= 20;
-		}
+	ProcessData(data, buffer.size());
 
-		if (ciphLen % 8) {
-			Error("Socket::Read(): Cannot decrypt data! "
-				  "The length of the data is not a factor of 8.",
-				  ciphLen);
-			return false;
-		}
-
-		CryptTDES *ciph = Session::GetCipher();
-		ubyte *dec = ciph->Decrypt(data, ciphLen);
-		memcpy(data, dec, ciphLen);
-	}
-	*/
-	ProcessData(data, n);
-
-	recBytes += n;
+	recBytes += buffer.size();
 
 	Session::IncrementSequenceIn();
 
@@ -288,6 +261,36 @@ Socket::LastSize
 */
 int Socket::LastSize() {
 	return lastSize;
+}
+
+/*
+==================
+Socket::NextSize
+==================
+*/
+int Socket::NextSize(bool blocking) {
+	ubyte buf[8];
+	int flag = fcntl(socketID, F_GETFL);
+
+	if (!blocking) {
+		/* Set the socket in non-blocking mode */
+		fcntl(socketID, F_SETFL, flag | O_NONBLOCK);
+	}
+
+	int n = recv(socketID, buf, 8, MSG_PEEK);
+
+	if (!blocking) {
+		/* Revert to blocking */
+		fcntl(socketID, F_SETFL, flag & ~(O_NONBLOCK));
+	}
+
+	if (n < 0) {
+		if (errno != 11) {
+			Error("Failed to peek for data", errno);
+		}
+	}
+
+	return n;
 }
 
 /*
@@ -350,7 +353,7 @@ uint32 Socket::SplitPackets(ubyte *data, uint32 len) {
 	CryptTDES *cipher = Session::GetCipher();
 
 	if (len < 8) {
-		Warning("Socket::EncapsulatePacket(): "
+		Warning("Socket::SplitPackets(): "
 				"len < 8", len);
 		return 0;
 	}
@@ -369,7 +372,7 @@ uint32 Socket::SplitPackets(ubyte *data, uint32 len) {
 	remain = pacLen - 4;
 
 	if (fullLen > len) {
-		Warning("Socket::EncapsulatePacket(): "
+		Warning("Socket::SplitPackets(): "
 				"FullLen > len", fullLen-len);
 		return 0;
 	}

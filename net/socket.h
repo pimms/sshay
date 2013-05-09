@@ -25,7 +25,8 @@ public:
 	bool 			Write(const ubyte *raw, uint32 len);
 	bool 			HasData();
 	ubyte* 			Read();	
-	int 			LastSize();	// The size of the last returned data
+	int 			LastSize();	
+	int 			NextSize(bool blocking=false);
 	int 			GetSocketID();
 
 private:

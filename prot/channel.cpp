@@ -250,10 +250,10 @@ void Channel::OnChanData(const ubyte *data, uint32 len) {
 
 	/* Raw payload length */
 	plen = p.packetLength - p.paddingLength - 1;
-	//HexDump(data+10, plen, "recdata");
 
 	/* Actual data length */
 	BytesToInt(dlen, data+10);
+	//HexDump(data+14, dlen, "ascii");
 
 	for (int i=0; i<dlen; i++) {
 		ub = data[14+i];
@@ -414,15 +414,20 @@ Channel::HandleUnprintable
 */
 void Channel::HandleUnprintable(ubyte c) {
 	switch (c) {
-		case 8:	EraseChar(); 	break;
-	}
-}
+		case 8:
+			printf("\b");
+			break;
 
-/*
-==================
-Channel::EraseChar
-==================
-*/
-void Channel::EraseChar() {
-	printf("\b \b");
+		case 27:	
+			printf("\b \b");
+			break;             
+
+		case 13:
+			printf("\b");
+			break;
+
+		default:
+			printf("%c", c);
+			break;
+	}
 }
