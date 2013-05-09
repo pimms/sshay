@@ -224,13 +224,13 @@ bool Session::Initiate(string host, int port) {
 	Message msg;
 	msg.Add(SSH_MSG_NEWKEYS);
 	socket.Write(msg.GetData(), msg.GetLength());
-	printf("Sent SSH_MSG_NEWKEYS\n");
+	//printf("Sent SSH_MSG_NEWKEYS\n");
 
 	ubyte *data = socket.Read();
 	uint32 len = socket.LastSize();
 
 	if (IsPacketOfType(data, len, SSH_MSG_NEWKEYS)) {
-		printf("Received SSH_MSG_NEWKEYS\n");
+		//printf("Received SSH_MSG_NEWKEYS\n");
 	}
 	
 	hashPackets = true;
@@ -245,7 +245,7 @@ Session::UserAuthentication
 ==================
 */
 bool Session::UserAuthentication() {
-	printf("Starting SSH-USERAUTH\n");
+	//printf("Starting SSH-USERAUTH\n");
 	if (!RequestAuth()) {
 		return false;
 	}
@@ -310,12 +310,12 @@ bool Session::ValidateServerID() {
 	string id = GetIDMessage();
 	GData::localid = id;
 
-	printf("Sending: %s\n", id.c_str());
+	//printf("Sending: %s\n", id.c_str());
 	socket.Write((const ubyte*)id.c_str(), id.length()); 
 
 	ubyte *data = socket.Read();
 	if (data) {
-		printf("reply: %s\n", data);
+		//printf("reply: %s\n", data);
 
 		/* Copy the identification string, remove CRLF */
 		char *c = (char*)data;
@@ -333,13 +333,13 @@ bool Session::ValidateServerID() {
 			Error("Bad reply from server");
 			return false;
 		}
-		printf("Server SSH Version:  %s ", strdiv);
+		//printf("Server SSH Version:  %s ", strdiv);
 
 		if (atof(strdiv) < 1.98 || atof(strdiv) > 2.02) {
-			printf("%s[INCOMPATIBLE]%s\n", CRED, CWHITE);
+			//printf("%s[INCOMPATIBLE]%s\n", CRED, CWHITE);
 			return false;
 		} else {
-			printf("[compatible]\n");
+			//printf("[compatible]\n");
 			return true;
 		}
 	}
@@ -358,7 +358,7 @@ void Session::SendKexInit() {
 	Message msg = GetKexInitMessage();
 	socket.Write(msg.GetData(), msg.GetLength());
 
-	printf("Sent KEXINIT\n");
+	//printf("Sent KEXINIT\n");
 
 	/* Store the sent payload in lKexinitPl */
 	Packet p(msg.GetData(), msg.GetLength());
@@ -384,7 +384,7 @@ bool Session::ReadKexInit() {
 		return false;
 	}
 
-	printf("Received MSG_KEXINIT\n");	
+	//printf("Received MSG_KEXINIT\n");	
 
 	/* Store the payload in rKexinitPl */
 	KexPacket kex(data, socket.LastSize());
@@ -415,7 +415,7 @@ bool Session::RequestAuth() {
 	socket.Write(msg.GetData(), msg.GetLength());
 
 	data = socket.Read();
-	DeterminePacket(data, socket.LastSize());
+	//DeterminePacket(data, socket.LastSize());
 
 	if (!IsPacketOfType(data, socket.LastSize(),
 		SSH_MSG_SERVICE_ACCEPT)) {

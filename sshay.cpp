@@ -106,13 +106,14 @@ void SetStdinEcho(bool echo) {
 
 int main(int argc, char *argv[]) {
 	/* Perform unit-tests */
+	/*
 	printf("Performing unit-tests...\n");
 	UT_Packet();
 	UT_Types();
 	UT_Mac();
 	UT_DSS();
 	printf("Unit-tests OK!\n\n");
-
+	*/
 
 	string host;
 	int port;

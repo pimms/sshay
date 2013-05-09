@@ -71,7 +71,7 @@ bool KeyExchange::SendDHInit() {
 		return false;
 	}
 
-	printf("Sent KEXDH_INIT\n");
+	//printf("Sent KEXDH_INIT\n");
 	return true;
 }
 
@@ -293,19 +293,7 @@ bool KeyExchange::VerifyDHReplyHash(ubyte *myHash) {
     result = DSA_do_verify(myHash, 20, dsasig, dsakey);
 
 	if (result == 0) {
-		Warning("Signature verification failed.");
-
-		printf("Failed to verify the identity of the server.\n");
-		printf("The connection is NOT secure!!!!\n");
-		printf("Would you like to continue anyway? (y/N)  ");
-		string in;
-		getline(cin, in);
-
-		if (in.length() == 1 && toupper(in[0]) == 'Y') {
-			printf("Continuing with an insecure connection.\n");
-			printf("\tUbw5N8iVDHI\n");
-			return true;
-		}
+		Warning("Signature verification failed. DISCONNECTING!");
 
 		return false;
 	} else if (result == -1) {
@@ -316,7 +304,7 @@ bool KeyExchange::VerifyDHReplyHash(ubyte *myHash) {
 		return false;
 	} else if (result == 1) {
 		/* Everything went WAY better than expected */
-		printf("DSA Signature verified!\n");
+		//printf("DSA Signature verified!\n");
 		return true;
 	}
 

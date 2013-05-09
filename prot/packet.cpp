@@ -351,7 +351,6 @@ uint32 MPInt::GetRawLength() {
 	if (!leadingZero) {
 		char c[2] = { str[offset], 0 };
 		if (strtol(c, NULL, 16) & 8) { 
-			printf("ZERO OVERRIDE\n");
 			leadingZero = true;
 		}
 	}
@@ -618,9 +617,7 @@ KexDHPacket::KexDHPacket(const ubyte *raw, uint32 len)
 	uint32 flen = 0;	// Field length
 	char *kstr=0; 		// Identity string
 
-	if (IsOfType(SSH_MSG_KEXDH_REPLY)) {
-		printf("Received SSH_MSG_KEXDHREPLY\n");
-	} else {
+	if (!IsOfType(SSH_MSG_KEXDH_REPLY)) {
 		Warning("KexDHPacket(): Bad packet data given!");
 		return;
 	}
@@ -678,18 +675,6 @@ KexDHPacket::KexDHPacket(const ubyte *raw, uint32 len)
 	b += 20;
 
 	b += paddingLength;
-
-	/* The SSH_MSG_NEWKEYS packet follows: */
-	if (len - b > 8) {
-		Packet p(raw+b, len-b);
-		if (p.IsOfType(SSH_MSG_NEWKEYS)) {
-			printf("Received SSH_MSG_NEWKEYS\n");
-		} else {
-			Warning("Dit not receive SSH_MSG_NEWKEYS!");
-		}
-	} else {
-		Warning("Dit not receive SSH_MSG_NEWKEYS!");
-	}
 }
 
 /*
